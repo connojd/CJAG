@@ -17,6 +17,7 @@ typedef struct _cjag_config_t {
     int jag_recv_count;
     int set_offset;
     int timeout;
+    int verbose;
 
     watchdog_t *watchdog;
     void *addresses;

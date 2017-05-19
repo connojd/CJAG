@@ -6,7 +6,7 @@ void *watchdog(void *arg) {
     watchdog_t *params = (watchdog_t *) arg;
     while (!params->done && params->timeout) {
         params->timeout--;
-        sleep(1);
+//        sleep(1);
     }
     if (!params->done) {
         params->callback(params->data);

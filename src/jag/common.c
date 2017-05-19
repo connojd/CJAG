@@ -1,5 +1,4 @@
 #include "common.h"
-#include <sys/mman.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -8,6 +7,24 @@
 #include "../cache/slice.h"
 #include "../util/timing.h"
 #include "../util/error.h"
+
+/* bareflank additions */
+extern int munmap(void *addr, size_t length);
+extern void *mmap(
+    void *addr,
+    size_t length,
+    int prot,
+    int flags,
+    int fd,
+    off_t offset);
+
+#define PROT_READ 0
+#define PROT_WRITE 0
+#define MAP_PRIVATE 0
+#define MAP_ANONYMOUS 0
+#define MAP_HUGETLB 0
+#define MAP_FAILED (void *)(-1)
+/* bareflank additions */
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 

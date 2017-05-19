@@ -12,7 +12,7 @@ OBJECTS = 	detection/paging.o \
 		jag/send.o \
 		jag/common.o \
 		jag/receive.o
-		
+
 FLAGS = -Wall -g -O3 -march=native -std=gnu11 -pthread
 
 all: cjag
@@ -22,7 +22,7 @@ cjag: cjag.c $(OBJECTS) cjag.h
 
 %.o: %.c
 	gcc $(FLAGS) -c $^ -o $@
-	
+
 .PHONY: clean
 clean:
 	rm -f $(OBJECTS) cjag

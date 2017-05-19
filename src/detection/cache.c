@@ -9,7 +9,7 @@ cache_config_l3_t get_l3_info() {
     cache_config_l3_t config;
 
     do {
-        asm volatile("cpuid" : "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "a" (4), "c" (level));
+        __asm volatile("cpuid" : "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx) : "a" (4), "c" (level));
         int type = eax & 0x1f;
         if(!type) break;
         level++;
