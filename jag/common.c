@@ -33,11 +33,16 @@ int jag_free(cjag_config_t* config) {
 
 volatile void **
 jag_get_cache_sets(cjag_config_t *config) {
+    printf("jag_get_cache_sets:\n");
+    printf("    cache_slices = %d\n", config->cache_slices);
     const int n_addr_per_set = 16 / config->cache_slices;
+    printf("    addr_per_set = %d\n", n_addr_per_set);
     const int n_pages = (int) (ceil((float) config->cache_ways / n_addr_per_set) + 1);
+    printf("    n_pages = %d\n", n_pages);
     const int set_offset = 0;
     const int sub_set_offset = 64; //this should not change the process at all, but prevent interference from traffic on 4k aligned sets
     const int probe_count = MIN(2, n_addr_per_set); // 2 seems to be enough, but won't just work for 16 cores
+    printf("    probe_count = %d\n", probe_count);
     const int n_samples = 16 * 1024;
     uint8_t *cache_set[n_pages][32][config->cache_slices][n_addr_per_set];
     uint8_t cache_set_counter[32][config->cache_slices];
@@ -86,7 +91,10 @@ jag_get_cache_sets(cjag_config_t *config) {
 
     for (int p = n_pages - 1; p > 0; --p) {
         tes_size = p * config->cache_slices * n_addr_per_set;
+        printf("    tes_size = %d\n", tes_size);
         slice_offset[p] = config->cache_slices - 1;
+        printf("    slice_offset[%d] = %d\n", p, slice_offset[p]);
+        printf("    cache_miss_threshold = %d\n", config->cache_miss_threshold);
         for (int i = 0; i < config->cache_slices; ++i) {
             int fast = 0, slow = 0;
             tes_size -= n_addr_per_set;
@@ -99,6 +107,7 @@ jag_get_cache_sets(cjag_config_t *config) {
                     fast++;
             }
 
+            printf("    cache slice %d: slow = %d, fast = %d\n", i, slow, fast);
             //is faster, but might have a few errors
             if (slow < fast)
                 break;

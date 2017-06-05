@@ -140,6 +140,12 @@ int main(int argc, char **argv) {
 
     ERROR_ON(!has_huge_pages(), ERROR_NO_HUGEPAGES, config.color_output);
 
+    printf("Pre-init config:\n");
+    printf("    cache_slices = %d\n", config.cache_slices);
+    printf("    cache_ways = %d\n", config.cache_ways);
+    printf("    timeout = %d\n", config.timeout);
+    printf("    send_count = %d\n", config.jag_send_count);
+    printf("    recv_count = %d\n", config.jag_recv_count);
     int init = jag_init(&config);
     ERROR_ON(!init, ERROR_NO_CACHE_SETS, config.color_output);
 
