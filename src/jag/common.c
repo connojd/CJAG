@@ -8,24 +8,6 @@
 #include "../util/timing.h"
 #include "../util/error.h"
 
-/* bareflank additions */
-extern int munmap(void *addr, size_t length);
-extern void *mmap(
-    void *addr,
-    size_t length,
-    int prot,
-    int flags,
-    int fd,
-    off_t offset);
-
-#define PROT_READ 0
-#define PROT_WRITE 0
-#define MAP_PRIVATE 0
-#define MAP_ANONYMOUS 0
-#define MAP_HUGETLB 0
-#define MAP_FAILED (void *)(-1)
-/* bareflank additions */
-
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
 int jag_init(cjag_config_t* config) {
@@ -44,9 +26,8 @@ int jag_init(cjag_config_t* config) {
 int jag_free(cjag_config_t* config) {
     free(config->cache_sets);
     free(config->addr);
-    return !munmap(config->addresses, config->n_pages * 2 * 1024 * 1024);
+    return 1; /* !munmap(config->addresses, config->n_pages * 2 * 1024 * 1024); */
 }
-
 
 volatile void **
 jag_get_cache_sets(cjag_config_t *config) {
@@ -65,11 +46,12 @@ jag_get_cache_sets(cjag_config_t *config) {
     uint8_t cache_set_counter[32][config->cache_slices];
     int slice_offset[n_pages];
 
-    uint8_t *addr = mmap(NULL, n_pages * 2 * 1024 * 1024, PROT_READ | PROT_WRITE,
-                         MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, 0, 0);
-    if (addr == MAP_FAILED) {
-        return NULL;
-    }
+    //uint8_t *addr = mmap(NULL, n_pages * 2 * 1024 * 1024, PROT_READ | PROT_WRITE,
+    //                     MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, 0, 0);
+    uint8_t *addr = 0x40000000UL;
+    //if (addr == MAP_FAILED) {
+    //    return NULL;
+    //}
 
     config->addresses = (void*)addr;
 
@@ -113,6 +95,7 @@ jag_get_cache_sets(cjag_config_t *config) {
         printf("    slice_offset[%d] = %d\n", p, slice_offset[p]);
         printf("    cache_miss_threshold = %d\n", config->cache_miss_threshold);
         for (int i = 0; i < config->cache_slices; ++i) {
+            printf("    test_evict_set on slice %d:\n", i);
             int fast = 0, slow = 0;
             tes_size -= n_addr_per_set;
             for (int c = 0; c < n_samples; ++c) {
@@ -124,7 +107,7 @@ jag_get_cache_sets(cjag_config_t *config) {
                     fast++;
             }
 
-            printf("    cache slice %d: slow = %d, fast = %d\n", i, slow, fast);
+            printf("        cache slice %d: slow = %d, fast = %d\n", i, slow, fast);
             //is faster, but might have a few errors
             if (slow < fast)
                 break;
@@ -161,8 +144,9 @@ jag_get_cache_sets(cjag_config_t *config) {
             }
         }
     }
-
+    printf("sizeof(final_cache_sets): %d\n", sizeof(final_cache_sets));
     volatile void **cache_set_out = malloc(sizeof(final_cache_sets));
+    if (cache_set_out == NULL) printf("cache_set_out == NULL\n");
     memcpy(cache_set_out, final_cache_sets, sizeof(final_cache_sets));
 
     return cache_set_out;

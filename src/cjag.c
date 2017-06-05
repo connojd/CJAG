@@ -55,49 +55,65 @@ void show_help()
 
 void init_options(int argc, const char **argv, cjag_config_t *config)
 {
-    for (int i = 1; i + 1 < argc; i += 2) {
+    for (int i = 1; i < argc;) {
 
         const char *opt = argv[i];
-        const char *val = argv[i + 1];
 
         if (opt[0] != '-') {
-            printf("Only short options are supported\n");
-            exit(22);
+            printf("Only short options are allowed\n");
+            exit(1);
+        }
+
+        if (opt[1] == 'r') {
+            config->send = 0;
+            i++;
+            continue;
+        }
+
+        if (i + 1 >= argc) {
+            printf("-%c needs int arg after it\n", opt[1]);
+            exit(1);
         }
 
         switch (opt[1]) {
-        case 'r':
-            config->send = 0;
-            break;
         case 'c':
-            config->cache_size = atoi(val);
+            config->cache_size = atoi(argv[i + 1]);
+            i += 2;
             break;
         case 't':
-            config->cache_miss_threshold = atoi(val);
+            config->cache_miss_threshold = atoi(argv[i + 1]);
+            i += 2;
             break;
         case 'w':
-            config->cache_ways = atoi(val);
+            config->cache_ways = atoi(argv[i + 1]);
             config->cache_kill_count = config->cache_ways - 1;
+            i += 2;
             break;
         case 's':
-            config->cache_slices = atoi(val);
+            config->cache_slices = atoi(argv[i + 1]);
+            i += 2;
             break;
         case 'n':
             config->color_output = 0;
+            i++;
             break;
         case 'd':
-            config->jag_send_count = config->jag_send_count * atoi(val);
-            config->jag_recv_count = config->jag_recv_count * atoi(val);
+            config->jag_send_count = config->jag_send_count * atoi(argv[i + 1]);
+            config->jag_recv_count = config->jag_recv_count * atoi(argv[i + 1]);
+            i += 2;
             break;
         case 'p':
-            config->timeout = atoi(val);
+            config->timeout = atoi(argv[i + 1]);
+            i += 2;
             break;
         case 'v':
             config->verbose = 1;
+            i++;
             break;
         case 'h':
             show_help(argv[0], &config);
             exit(0);
+            break;
         default:
             printf("cjag: unknown argument: %s\n", opt);
             show_help(argv[0], &config);
@@ -224,7 +240,7 @@ int main(int argc, char **argv) {
 
         printf_color(config.color_output, "\n[g][ # ][/g] Reconstructing mapping...\n");
         for (int i = 0; i < config.channels; i++) {
-            printf_color(config.color_output, "[g][ + ][/g]   Sender[[m]%d[/m]] -> Receiver[[c]%zd[/c]]\n", i,
+            printf_color(config.color_output, "[g][ + ][/g]   Sender[[m]%d[/m]] -> Receiver[[c]%lu[/c]]\n", i,
                          usable_sets[i]);
         }
 
@@ -327,10 +343,11 @@ void receive_callback(cjag_config_t *config, int set) {
 
 void watch_callback(cjag_config_t *config, int set) {
     watchdog_reset(config->watchdog);
-    printf_color(config->color_output, "[g][ + ][/g]   Sender[[m]%d[/m]] <-> Sender[[c]%zd[/c]] [g]%s[/g][r]%s[/r]\n",
+    printf("usable_sets = %p\n", (void *)usable_sets);
+    printf_color(config->color_output, "[g][ + ][/g]   Sender[[m]%d[/m]] <-> Sender[[c]%lu[/c]] [g]%s[/g][r]%s[/r]\n",
                  set - 1, usable_sets[set - 1] - config->set_offset,
-                 (set - 1 == usable_sets[set - 1] - config->set_offset) ? "[ OK ]" : "",
-                 (set - 1 != usable_sets[set - 1] - config->set_offset) ? "[FAIL]" : "");
+                 (set - 1 == (usable_sets[set - 1] - config->set_offset)) ? "[ OK ]" : "",
+                 (set - 1 != (usable_sets[set - 1] - config->set_offset)) ? "[FAIL]" : "");
 }
 
 void timeout(void *arg) {
