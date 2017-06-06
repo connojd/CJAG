@@ -123,11 +123,11 @@ void init_options(int argc, const char **argv, cjag_config_t *config)
 }
 
 int main(int argc, char **argv) {
-    printf("cjag: argc = %d\n", argc);
-
-    for (int i = 0; i < argc; i++) {
-        printf("cjag: argv[%d] = %s\n", i, argv[i]);
-    }
+//    printf("cjag: argc = %d\n", argc);
+//
+//    for (int i = 0; i < argc; i++) {
+//        printf("cjag: argv[%d] = %s\n", i, argv[i]);
+//    }
 
     watchdog_t watchdog_settings;
     cjag_config_t config = {
@@ -145,7 +145,6 @@ int main(int argc, char **argv) {
             .watchdog = &watchdog_settings
     };
 
-    printf("cjag: calling get_l3_info()\n");
     cache_config_l3_t l3 = get_l3_info();
     config.cache_size = l3.size;
     config.cache_ways = l3.ways;
@@ -158,9 +157,7 @@ int main(int argc, char **argv) {
     init_options(argc, argv, &config);
     //free(long_options);
 
-    printf("cjag: calling show_welcome(&config)\n");
     show_welcome(&config);
-    printf("cjag: calling show_parameters(&config)\n");
     show_parameters(&config);
 
     ERROR_ON(config.cache_slices > 16, ERROR_TOO_MANY_CPUS, config.color_output);
@@ -231,6 +228,7 @@ int main(int argc, char **argv) {
     } else {
         printf_color(config.color_output, "[y]Receive mode[/y]: start [c]listening[/c]...\n\n");
         printf_color(config.color_output, "[g][ # ][/g] Receiving sets...\n");
+        exit(0);
 //        watchdog_reset(config.watchdog);
         jag_receive(addrs, usable_sets, &config, receive_callback);
         if(config.verbose) {
