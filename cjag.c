@@ -35,6 +35,7 @@ static getopt_arg_t options[] =
                 {"cache-size", required_argument, NULL, 'c', "Set the size of the L3 cache to [y]SIZE[/y] bytes (default: auto detect)",                    "SIZE"},
                 {"ways",       required_argument, NULL, 'w', "Set the number of cache ways to [y]WAYS[/y] ways (default: auto detect)",                     "WAYS"},
                 {"slices",     required_argument, NULL, 's', "Set the number of cache slices to [y]SLICES[/y] slices (default: auto detect)",               "SLICES"},
+                {"channels",   required_argument, NULL, 'a', "Set the number of channels to [y]CHANNELS[/y] (default: 6)",               "CHANNELS"},
                 {"no-color",   no_argument,       NULL, 'n', "Disable color output.",                                    NULL},
                 {"verbose",    no_argument,       NULL, 'v', "Verbose mode",                                             NULL},
                 {"help",       no_argument,       NULL, 'h', "Show this help.",                                          NULL},
@@ -69,7 +70,7 @@ int main(int argc, char **argv) {
     ERROR_ON(!long_options, ERROR_OOM, config.color_output);
 
     int c;
-    while ((c = getopt_long(argc, argv, ":c:t:w:rs:nhd:p:v", long_options, NULL)) != EOF) {
+    while ((c = getopt_long(argc, argv, ":a:c:t:w:rs:nhd:p:v", long_options, NULL)) != EOF) {
         switch (c) {
             case 'r':
                 config.send = 0;
@@ -96,6 +97,9 @@ int main(int argc, char **argv) {
                 break;
             case 'p':
                 config.timeout = atoi(optarg);
+                break;
+            case 'a':
+                config.channels = atoi(optarg);
                 break;
             case 'v':
                 verbose = 1;
