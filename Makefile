@@ -15,9 +15,12 @@ OBJECTS = 	detection/paging.o \
 		
 FLAGS = -Wall -g -O3 -march=native -std=gnu11 -pthread
 
-all: cjag
+all: cjag cflush
 
 cjag: cjag.c $(OBJECTS) cjag.h
+	gcc $(OBJECTS) $(FLAGS) -o $@ $@.c -lm
+
+cflush: cflush.c $(OBJECTS)
 	gcc $(OBJECTS) $(FLAGS) -o $@ $@.c -lm
 
 %.o: %.c
@@ -25,4 +28,4 @@ cjag: cjag.c $(OBJECTS) cjag.h
 	
 .PHONY: clean
 clean:
-	rm -f $(OBJECTS) cjag
+	rm -f $(OBJECTS) cjag cflush
