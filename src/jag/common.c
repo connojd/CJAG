@@ -40,11 +40,15 @@ jag_get_cache_sets(cjag_config_t *config) {
     const int set_offset = 0;
     const int sub_set_offset = 64; //this should not change the process at all, but prevent interference from traffic on 4k aligned sets
     const int probe_count = 1; //MIN(2, n_addr_per_set); // 2 seems to be enough, but won't just work for 16 cores
-    printf("    probe_count = %d\n", probe_count);
+//    printf("    probe_count = %d\n", probe_count);
     const int n_samples = 16 * 1024;
+//    printf("    n_samples *\n");
     uint8_t *cache_set[n_pages][32][config->cache_slices][n_addr_per_set];
+//    printf("    cache_set *\n");
     uint8_t cache_set_counter[32][config->cache_slices];
+//    printf("    cache_set_counter *\n");
     int slice_offset[n_pages];
+//    printf("    slice_offset *\n");
 
     //uint8_t *addr = mmap(NULL, n_pages * 2 * 1024 * 1024, PROT_READ | PROT_WRITE,
     //                     MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, 0, 0);
@@ -53,13 +57,17 @@ jag_get_cache_sets(cjag_config_t *config) {
     //    return NULL;
     //}
 
+//    printf("    writing config->addresses\n");
     config->addresses = (void*)addr;
 
+//    printf("    memset: cache_set\n");
     memset(cache_set, 0, sizeof(cache_set));
+//    printf("    memset: slice_offset\n");
     memset(slice_offset, 0, sizeof(slice_offset));
 
     // initialize the cache sets
     for (int i = 0; i < n_pages; ++i) {
+//        printf("    memset: cache_set_counter\n");
         memset(cache_set_counter, 0, sizeof(cache_set_counter));
         for (int j = 0; j < 512; ++j) {
             uint8_t *cur_addr = addr + i * 2 * 1024 * 1024 + 4096 * j;
@@ -92,13 +100,13 @@ jag_get_cache_sets(cjag_config_t *config) {
 //    printf("    cache_miss_threshold = %d\n", config->cache_miss_threshold);
     for (int p = n_pages - 1; p > 0; --p) {
         tes_size = p * config->cache_slices * n_addr_per_set;
-        printf("    total tes size = %d\n", tes_size);
+//        printf("    total tes size = %d\n", tes_size);
         slice_offset[p] = config->cache_slices - 1;
-        printf("    test_evict_set on page %d:\n", p);
+//        printf("    test_evict_set on page %d:\n", p);
         for (int i = 0; i < config->cache_slices; ++i) {
             int fast = 0, slow = 0;
             tes_size -= n_addr_per_set;
-            printf("    tes_size = %d, slice_offset = %d, ", tes_size, slice_offset[p]);
+//            printf("    tes_size = %d, slice_offset = %d, ", tes_size, slice_offset[p]);
             for (int c = 0; c < n_samples; ++c) {
                 uint32_t time = test_evict_set(probe_set, eviction_set, test_eviction_set, probe_count, es_size,
                                                tes_size);
@@ -108,7 +116,7 @@ jag_get_cache_sets(cjag_config_t *config) {
                     fast++;
             }
 
-            printf("slow = %d, fast = %d\n", slow, fast);
+ //           printf("slow = %d, fast = %d\n", slow, fast);
             //is faster, but might have a few errors
             if (slow < fast)
                 break;
